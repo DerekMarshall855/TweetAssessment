@@ -1,0 +1,27 @@
+{
+  "name": "leapgradbackend",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "node ./tests/test.js",
+    "start": "node server.js"
+  },
+  "author": "Derek Marshall",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-async-handler": "^1.1.4",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.13.7"
+  },
+  "devDependencies": {
+    "mocha": "^9.0.3",
+    "nodemon": "^2.0.12",
+    "should": "^13.2.3",
+    "supertest": "^6.1.5"
+  }
+}
