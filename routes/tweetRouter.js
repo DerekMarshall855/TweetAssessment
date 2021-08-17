@@ -34,8 +34,8 @@ tweetRouter.get("/timeline", expressAsyncHandler( async(req, res) => {
         const currentUser = await User.findById(req.body._id);
         const tweets = await Tweet.findById({ userId: currentUser._id });
         const followingTweets = await Promise.all(  // Promise all takes list of promises and returns list of results
-            currentUser.following.map((followId) => {  // use .map to loop through all userId in following array (followId), then create promise (Post.find) to fetch that users tweets
-                return Post.find({ userId: followId });
+            currentUser.following.map(async (followId) => {  // use .map to loop through all userId in following array (followId), then create promise (Post.find) to fetch that users tweets
+                return Tweet.find({ userId: followId });
             })
         );
         res.status(200).send({success: true, message: tweets.concat(...followingTweets)});
