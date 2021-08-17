@@ -11,11 +11,11 @@ chatRouter.post("/", expressAsyncHandler(async(req, res) => {
     });
     const createdChat = await newChat.save()
     .catch(err => {
-        res.status(401).send({
+        res.status(500).send({
             success: false,
             err: err.message
         })
-    });  // If user exists our default error sends code 500
+    }); 
     res.status(200).send({
         success: true,
         _id: createdChat._id,
@@ -23,7 +23,7 @@ chatRouter.post("/", expressAsyncHandler(async(req, res) => {
     });
 }));
 
-// Get chat by ID
+// Get chat by User ID
 chatRouter.get("/:id", expressAsyncHandler(async(req, res) => {
     const conversation = await Chat.find({
         members: { $in:[req.params.id] }

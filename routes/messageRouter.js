@@ -1,6 +1,7 @@
 import express from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import Message from '../models/messageModel.js';
+import Chat from '../models/chatModel.js';
 
 const messageRouter = express.Router();
 
@@ -9,26 +10,41 @@ const messageRouter = express.Router();
 // Import Chat schema => Chat.findById(chatId) => Yes | No
 
 messageRouter.post("/", expressAsyncHandler(async(req, res) => {
-    const newMessage = new Message({
-        chatId: req.body.chatId,
-        sender: req.body.sender,
-        text: req.body.text
-    });
-    const createdMessage = newMessage.save()
+    const chat = await Chat.findById(req.body.chatId)
         .catch(err => {
-            res.status(401).send({
+            res.status(500).send({
                 success: false,
-                err: err.message
-            })
+                error: err
+            });
         });
-    //Saves correctly but postman (MongoDB Compass) -> Only sends success: true back to Postman
-    res.status(200).send({
-        success: true,
-        _id: createdMessage._id,
-        chatId: createdMessage.chatId,
-        sender: createdMessage.sender,
-        text: createdMessage.text
-    });  // Probably dont want to send entire text everytime, good for non business app tho
+    if (chat) {  // If chat exists, create message, add message to DB
+        const newMessage = new Message({
+            chatId: req.body.chatId,
+            sender: req.body.sender,
+            text: req.body.text
+        });
+        const createdMessage = newMessage.save()
+            .catch(err => {
+                res.status(500).send({
+                    success: false,
+                    error: err.message
+                })
+            });
+        //Saves correctly but postman (MongoDB Compass) -> Only sends success: true back to Postman
+        res.status(200).send({
+            success: true,
+            _id: createdMessage._id,
+            chatId: createdMessage.chatId,
+            sender: createdMessage.sender,
+            text: createdMessage.text
+        });  // Probably dont want to send entire text everytime, good for non business app tho
+    } else {
+        res.status(401).send({
+            success: false,
+            error: `Chat with id ${req.body.chatId} doesn't exist`
+        });
+    }
+    
     
 }));
 
