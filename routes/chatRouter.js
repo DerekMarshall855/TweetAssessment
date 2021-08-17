@@ -16,6 +16,7 @@ chatRouter.post("/", expressAsyncHandler(async(req, res) => {
             err: err.message
         })
     }); 
+    // socket.emit newChat here to put message "Chat has been created!" into frontend UI
     res.status(200).send({
         success: true,
         _id: createdChat._id,

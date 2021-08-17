@@ -30,7 +30,8 @@ messageRouter.post("/", expressAsyncHandler(async(req, res) => {
                     error: err.message
                 })
             });
-        //Saves correctly but postman (MongoDB Compass) -> Only sends success: true back to Postman
+        // socket.emit message here to send message to people in chat
+        // Saves correctly but postman (MongoDB Compass) -> Only sends success: true back to Postman
         res.status(200).send({
             success: true,
             _id: createdMessage._id,
@@ -60,6 +61,7 @@ messageRouter.get("/:chatId", expressAsyncHandler(async(req, res) => {
         });
     });
     if (allMessages) {
+        // Likely used for fetching chat on frontend, -> Dont need to emit live socket as this is a bulk load
         res.status(200).send({
             success: true,
             messages: allMessages
