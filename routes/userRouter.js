@@ -89,25 +89,29 @@ userRouter.delete("/:id", expressAsyncHandler(async (req, res) => {
 }));
 
 // Clear user Collection (ONLY USED FOR UNIT TESTING)
-userRouter.delete('/removeAll', expressAsyncHandler(async (req, res) => {
+userRouter.delete('/remove/all', expressAsyncHandler(async (req, res) => {
     await User.deleteMany({});
     res.status(200).send({success: true, message:"All users have been deleted"});
 }));
 
 // Get user
 userRouter.get('/:id', expressAsyncHandler( async( req, res) => {
+    // If user doesnt exist error code 500
     const user = await User.findById(req.params.id)
         .catch(err => {
             res.status(500).send({success: false, error: err});
             return;
         });
-        const {password, ...everythingElse} = user;  // Deconstruct user JSON to split password info from all other info, send this back
-        res.status(200).send({success: true, message: everythingElse});
+
+    const {password, ...everythingElse} = user;  // Deconstruct user JSON to split password info from all other info, send this back
+    res.status(200).send({success: true, message: everythingElse._doc});
+
+
 }));
 
 // Follow user
 
-userRouter.put('/:id/follow', expressAsyncHandler( async(req, res) => {
+userRouter.put('/follow/:id', expressAsyncHandler( async(req, res) => {
     if (req.body._id !== req.params.id) {
         try {  //Use try/catch here for clarity since potential errors on > 1 operation
             const user = await User.findById(req.params.id);
@@ -115,7 +119,7 @@ userRouter.put('/:id/follow', expressAsyncHandler( async(req, res) => {
             if (!user.followers.includes(req.body._id)) {
                 // Update followers of target and following of current user
                 await user.updateOne({ $push: { followers: req.body._id }});
-                await currentUser.updateOne({ $push: {following: req.params.id }});
+                await currentUser.updateOne({ $push: { following: req.params.id }});
                 res.status(200).send({success: true, message: "User successfully followed"})
             } else {
                 res.status(403).send({success: false, error: "You already follow this user"});
@@ -125,14 +129,14 @@ userRouter.put('/:id/follow', expressAsyncHandler( async(req, res) => {
         }
         
     } else {
-        res.status(403).send({success: false, error: "You cannot follow yourself"});
+        res.status(401).send({success: false, error: "You cannot follow yourself"});
     }
 }));
 
 
 // Unfollow user
 
-userRouter.put('/:id/unfollow', expressAsyncHandler( async(req, res) => {
+userRouter.put('/unfollow/:id', expressAsyncHandler( async(req, res) => {
     if (req.body._id !== req.params.id) {
         try {  //Use try/catch here for clarity since potential errors on > 1 operation
             const user = await User.findById(req.params.id);
@@ -140,8 +144,8 @@ userRouter.put('/:id/unfollow', expressAsyncHandler( async(req, res) => {
             if (user.followers.includes(req.body._id)) {
                 // Update followers of target and following of current user
                 await user.updateOne({ $pull: { followers: req.body._id }});
-                await currentUser.updateOne({ $pull: {following: req.params.id }});
-                res.status(200).send({sucess: true, message: "User successfully unfollowed" });
+                await currentUser.updateOne({ $pull: { following: req.params.id }});
+                res.status(200).send({success: true, message: "User successfully unfollowed" });
             } else {
                 res.status(403).send({success: false, error: "You don't follow this user"});
             }
@@ -150,7 +154,7 @@ userRouter.put('/:id/unfollow', expressAsyncHandler( async(req, res) => {
         }
         
     } else {
-        res.status(403).send({success: false, error: "You cannot unfollow yourself"});
+        res.status(401).send({success: false, error: "You cannot unfollow yourself"});
     }
 }));
 

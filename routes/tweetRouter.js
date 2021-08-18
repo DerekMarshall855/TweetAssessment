@@ -5,7 +5,7 @@ import Tweet from '../models/tweetModel.js';
 const tweetRouter = express.Router();
 
 // Create tweet
-
+// If req.body contains parentId then it's a retweet
 tweetRouter.post("/", expressAsyncHandler( async(req, res) => {
     const newTweet = new Tweet(req.body);
     const saveTweet = newTweet.save()
@@ -26,6 +26,8 @@ tweetRouter.get("/:id", expressAsyncHandler( async( req, res) => {
         });
     res.status(200).send({success: true, message: tweet});
 }));
+
+// Add GET subTweets for loading comments
 
 // Get posts that user follows (timeline)
 
@@ -60,6 +62,8 @@ tweetRouter.put("/:id", expressAsyncHandler( async(req, res) => {
     }
 }));
 
+// Add UPDATE to add a subtweet (Comment should create own tweet then add that tweets ID to subTweets array)
+
 // Delete tweet
 
 tweetRouter.delete("/:id", expressAsyncHandler( async(req, res) => {
@@ -74,7 +78,7 @@ tweetRouter.delete("/:id", expressAsyncHandler( async(req, res) => {
     } else {
         res.status(401).send({success: false, error: "You can only delete your own tweets" });
     }
-}))
+}));
 
 // Like & Dislike tweet
 
@@ -91,7 +95,7 @@ tweetRouter.put("/:id/like", expressAsyncHandler( async(req, res) => {
         await tweet.updateOne({ $pull: { likes: req.body._id }});
         res.status(200).send({success: true, message: "Tweet has been unliked"});
     }
-}))
+}));
 
 
 export default tweetRouter;
