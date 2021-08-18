@@ -83,6 +83,44 @@ describe("POST/AUTH Routes /api/user", () => {  // Returns status and success or
         });
     });
 
+    it("Should return 406 success: false, error: Username and Password must not contain spaces", (done) => {
+        server.post("/api/user/register")
+        .send({
+            "name": "Test User 1",
+            "password": "123"
+        })
+        .expect("Content-type", /json/)
+        .expect(406)
+        .end((err, res) => {
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Username and Password must not contain spaces");
+            done();
+        });
+    });
+
+    it("Should return 406 success: false, error: Username and Password must not contain spaces", (done) => {
+        server.post("/api/user/register")
+        .send({
+            "name": "TestUser1",
+            "password": "1 2 3"
+        })
+        .expect("Content-type", /json/)
+        .expect(406)
+        .end((err, res) => {
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Username and Password must not contain spaces");
+            done();
+        });
+    });
+
     //Register 2nd account for update testing
     it("Should return success: true, _id, name, token", (done) => {
         server.post("/api/user/register")
@@ -251,6 +289,38 @@ describe("UPDATE /api/user/:id", () => {
             res.status.should.equal(401);
             res.body.success.should.equal(false);
             res.body.error.should.equal("You can only update your own account");
+            done();
+        });
+    });
+
+    it("Should return 406 success: false, error: Username must not contain spaces", (done) => {
+        server
+        .put(`/api/user/${t1_id}`)
+        .send({"_id": `${t1_id}`, "name": "Test User"})
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Username must not contain spaces");
+            done();
+        });
+    });
+
+    it("Should return 406 success: false, error: Password must not contain spaces", (done) => {
+        server
+        .put(`/api/user/${t1_id}`)
+        .send({"_id": `${t1_id}`, "name": "TestUser", "password": "1 2 3"})
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Password must not contain spaces");
             done();
         });
     });

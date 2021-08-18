@@ -10,7 +10,7 @@ const userRouter = express.Router();
 
 userRouter.post('/register', expressAsyncHandler(async(req, res) => {
     if(req.body.name.indexOf(' ') >= 0 || req.body.password.indexOf(' ') >= 0) {
-        res.status(403).send({success: false, error: "Username and Password must not contain spaces"})
+        res.status(406).send({success: false, error: "Username and Password must not contain spaces"})
     } else {
         const user = new User({name: req.body.name, password: bcrypt.hashSync(req.body.password, 8)});
         const createdUser = await user.save()
@@ -60,11 +60,11 @@ userRouter.put("/:id", expressAsyncHandler(async (req, res) => {
     // If we were adding admin feature do || req.body.isAdmin
     if (req.body._id === req.params.id) {
         if(req.body.name && req.body.name.indexOf(' ') >= 0) {
-            res.status(403).send({success: false, error: "Username must not contain spaces"})
+            res.status(406).send({success: false, error: "Username must not contain spaces"})
         } else {
             if (req.body.password) {
                 if (req.body.password.indexOf(' ') >= 0) {
-                    res.status(403).send({success: false, error: "Password must not contain spaces"})
+                    res.status(406).send({success: false, error: "Password must not contain spaces"})
                 } else {
                     try {
                         req.body.password = bcrypt.hashSync(req.body.password, 8);
