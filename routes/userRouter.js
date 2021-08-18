@@ -9,20 +9,25 @@ const userRouter = express.Router();
 // AUTH USER ROUTES
 
 userRouter.post('/register', expressAsyncHandler(async(req, res) => {
-    const user = new User({name: req.body.name, password: bcrypt.hashSync(req.body.password, 8)});
-    const createdUser = await user.save()
-    .catch(err => {
-        res.status(401).send({
-            success: false,
-            err: err.message
-        })
-    });  // If user exists our default error sends code 500
-    res.status(200).send({
-        success: true,
-        _id: createdUser._id,
-        name: createdUser.name,
-        token: generateToken(createdUser)
-    });
+    if(req.body.name.indexOf(' ') >= 0 || req.body.password.indexOf(' ') >= 0) {
+        res.status(403).send({success: false, error: "Username and Password must not contain spaces"})
+    } else {
+        const user = new User({name: req.body.name, password: bcrypt.hashSync(req.body.password, 8)});
+        const createdUser = await user.save()
+        .catch(err => {
+            res.status(401).send({
+                success: false,
+                err: err.message
+            })
+        });  // If user exists our default error sends code 500
+        res.status(200).send({
+            success: true,
+            _id: createdUser._id,
+            name: createdUser.name,
+            token: generateToken(createdUser)
+        });
+    }
+    
 }));
 
 userRouter.post('/signin', expressAsyncHandler(async(req, res) => {
@@ -54,21 +59,30 @@ userRouter.post('/signin', expressAsyncHandler(async(req, res) => {
 userRouter.put("/:id", expressAsyncHandler(async (req, res) => {
     // If we were adding admin feature do || req.body.isAdmin
     if (req.body._id === req.params.id) {
-        if (req.body.password) {
-            try {
-                req.body.password = bcrypt.hashSync(req.body.password, 8);
-            } catch (err) {
+        if(req.body.name && req.body.name.indexOf(' ') >= 0) {
+            res.status(403).send({success: false, error: "Username must not contain spaces"})
+        } else {
+            if (req.body.password) {
+                if (req.body.password.indexOf(' ') >= 0) {
+                    res.status(403).send({success: false, error: "Password must not contain spaces"})
+                } else {
+                    try {
+                        req.body.password = bcrypt.hashSync(req.body.password, 8);
+                    } catch (err) {
+                        res.status(500).send({success: false, error: err});
+                        return;
+                    }
+                }
+                
+            }
+            const user = await User.findByIdAndUpdate(req.params.id, {
+                $set: req.body
+            }).catch(err => {
                 res.status(500).send({success: false, error: err});
                 return;
-            }
+            })
+            res.status(200).send({success: true, message: "User successfully updated"});
         }
-        const user = await User.findByIdAndUpdate(req.params.id, {
-            $set: req.body
-        }).catch(err => {
-            res.status(500).send({success: false, error: err});
-            return;
-        })
-        res.status(200).send({success: true, message: "User successfully updated"});
     } else {
         res.status(401).send({success: false, error: "You can only update your own account"});
     }

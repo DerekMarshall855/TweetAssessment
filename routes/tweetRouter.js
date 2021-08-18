@@ -27,11 +27,25 @@ tweetRouter.get("/:id", expressAsyncHandler( async( req, res) => {
     res.status(200).send({success: true, message: tweet});
 }));
 
-// Add GET subTweets for loading comments
+// Add GET subTweets for loading comments (By tweetId)
+
+tweetRouter.get("/comments/:id", expressAsyncHandler( async(req, res) => {
+    try {
+        const currentTweet = await Tweet.findById(req.params.id);
+        const tweets = await Promise.all(
+            currentTweet.subTweets.map(async (tweetId) => {
+                return Tweet.findById(tweetId);
+            })
+        );
+        res.status(200).send({success: true, message: tweets});
+    } catch (err) {
+        res.status(500).send({success: false, error: err});
+    }
+}))
 
 // Get posts that user follows (timeline)
 
-tweetRouter.get("/timeline", expressAsyncHandler( async(req, res) => {
+tweetRouter.get("/find/timeline", expressAsyncHandler( async(req, res) => {
     try {
         const currentUser = await User.findById(req.body._id);
         const tweets = await Tweet.findById({ userId: currentUser._id });
@@ -44,7 +58,7 @@ tweetRouter.get("/timeline", expressAsyncHandler( async(req, res) => {
     } catch (err) {
         res.status(500).send({success: false, error: err});
     }
-}))
+}));
 
 // Update tweet
 
