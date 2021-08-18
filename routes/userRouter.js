@@ -58,7 +58,7 @@ userRouter.post('/signin', expressAsyncHandler(async(req, res) => {
 // Update name and/or password
 userRouter.put("/:id", expressAsyncHandler(async (req, res) => {
     // If we were adding admin feature do || req.body.isAdmin
-    if (req.body._id === req.params.id) {
+    if (req.body.id === req.params.id) {
         if(req.body.name && req.body.name.indexOf(' ') >= 0) {
             res.status(406).send({success: false, error: "Username must not contain spaces"})
         } else {
@@ -90,7 +90,7 @@ userRouter.put("/:id", expressAsyncHandler(async (req, res) => {
 
 // Delete single user
 userRouter.delete("/:id", expressAsyncHandler(async (req, res) => {
-    if (req.body._id === req.params.id) {
+    if (req.body.id === req.params.id) {
         await User.findByIdAndDelete(req.params.id)
             .catch(err => {
                 res.status(500).send({success: false, error: err});
@@ -126,13 +126,13 @@ userRouter.get('/:id', expressAsyncHandler( async( req, res) => {
 // Follow user
 
 userRouter.put('/follow/:id', expressAsyncHandler( async(req, res) => {
-    if (req.body._id !== req.params.id) {
+    if (req.body.id !== req.params.id) {
         try {  //Use try/catch here for clarity since potential errors on > 1 operation
             const user = await User.findById(req.params.id);
-            const currentUser = await User.findById(req.body._id);
-            if (!user.followers.includes(req.body._id)) {
+            const currentUser = await User.findById(req.body.id);
+            if (!user.followers.includes(req.body.id)) {
                 // Update followers of target and following of current user
-                await user.updateOne({ $push: { followers: req.body._id }});
+                await user.updateOne({ $push: { followers: req.body.id }});
                 await currentUser.updateOne({ $push: { following: req.params.id }});
                 res.status(200).send({success: true, message: "User successfully followed"})
             } else {
@@ -151,13 +151,13 @@ userRouter.put('/follow/:id', expressAsyncHandler( async(req, res) => {
 // Unfollow user
 
 userRouter.put('/unfollow/:id', expressAsyncHandler( async(req, res) => {
-    if (req.body._id !== req.params.id) {
+    if (req.body.id !== req.params.id) {
         try {  //Use try/catch here for clarity since potential errors on > 1 operation
             const user = await User.findById(req.params.id);
-            const currentUser = await User.findById(req.body._id);
-            if (user.followers.includes(req.body._id)) {
+            const currentUser = await User.findById(req.body.id);
+            if (user.followers.includes(req.body.id)) {
                 // Update followers of target and following of current user
-                await user.updateOne({ $pull: { followers: req.body._id }});
+                await user.updateOne({ $pull: { followers: req.body.id }});
                 await currentUser.updateOne({ $pull: { following: req.params.id }});
                 res.status(200).send({success: true, message: "User successfully unfollowed" });
             } else {

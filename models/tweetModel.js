@@ -10,7 +10,6 @@ import mongoose from 'mongoose';
 const tweetSchema = new mongoose.Schema(
     {
         userId: { type: String, required: true },
-        name: { type: String, required: true },
         post: { type: String, required: true },
         img: { type: String },
         likes: { type: Array, default: [] },

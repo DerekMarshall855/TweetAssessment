@@ -4,9 +4,8 @@ import should from 'should';
 let server = supertest.agent("http://localhost:5000");
 
 /*
-    User unit test currently deletes all of the DB and leaves you with one user for further testing
-    Username: TestUser
-    Password: 123
+    USER API TESTING
+    ----------------
 */
 
 let t1_id = "";
@@ -280,7 +279,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 401 success: false, error: You can only update your own account", (done) => {
         server
         .put(`/api/user/${t1_id}`)
-        .send({"_id": `${t2_id}`})
+        .send({"id": `${t2_id}`})
         .expect(401)
         .end(function(err,res){
             if (err) {
@@ -296,7 +295,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 406 success: false, error: Username must not contain spaces", (done) => {
         server
         .put(`/api/user/${t1_id}`)
-        .send({"_id": `${t1_id}`, "name": "Test User"})
+        .send({"id": `${t1_id}`, "name": "Test User"})
         .expect(406)
         .end(function(err,res){
             if (err) {
@@ -312,7 +311,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 406 success: false, error: Password must not contain spaces", (done) => {
         server
         .put(`/api/user/${t1_id}`)
-        .send({"_id": `${t1_id}`, "name": "TestUser", "password": "1 2 3"})
+        .send({"id": `${t1_id}`, "name": "TestUser", "password": "1 2 3"})
         .expect(406)
         .end(function(err,res){
             if (err) {
@@ -328,7 +327,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 200 success: true, message: User successfully updated", (done) => {
         server
         .put(`/api/user/${t1_id}`)
-        .send({"_id": `${t1_id}`, "name": "TestUser", "password": "1234"})
+        .send({"id": `${t1_id}`, "name": "TestUser", "password": "1234"})
         .expect(200)
         .end(function(err,res){
             if (err) {
@@ -366,7 +365,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 401, success: false, error: You cannot follow yourself", (done) => {
         server
         .put(`/api/user/follow/${t1_id}`)
-        .send({"_id": `${t1_id}`})
+        .send({"id": `${t1_id}`})
         .expect(401)
         .end(function(err,res){
             if (err) {
@@ -381,7 +380,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 200, success: true, message: User successfully followed", (done) => {
         server
         .put(`/api/user/follow/${t2_id}`)
-        .send({"_id": `${t1_id}`})
+        .send({"id": `${t1_id}`})
         .expect(200)
         .end(function(err,res){
             if (err) {
@@ -396,7 +395,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 403, success: false, error: You already follow this user", (done) => {
         server
         .put(`/api/user/follow/${t2_id}`)
-        .send({"_id": `${t1_id}`})
+        .send({"id": `${t1_id}`})
         .expect(403)
         .end(function(err,res){
             if (err) {
@@ -411,7 +410,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 401, success: false, error: You cannot unfollow yourself", (done) => {
         server
         .put(`/api/user/unfollow/${t1_id}`)
-        .send({"_id": `${t1_id}`})
+        .send({"id": `${t1_id}`})
         .expect(401)
         .end(function(err,res){
             if (err) {
@@ -426,7 +425,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 200, success: true, message: User successfully unfollowed", (done) => {
         server
         .put(`/api/user/unfollow/${t2_id}`)
-        .send({"_id": `${t1_id}`})
+        .send({"id": `${t1_id}`})
         .expect(200)
         .end(function(err,res){
             if (err) {
@@ -441,7 +440,7 @@ describe("UPDATE /api/user/:id", () => {
     it("Should return 403, success: false, error: You don't follow this user", (done) => {
         server
         .put(`/api/user/unfollow/${t2_id}`)
-        .send({"_id": `${t1_id}`})
+        .send({"id": `${t1_id}`})
         .expect(403)
         .end(function(err,res){
             if (err) {
@@ -459,7 +458,7 @@ describe("DELETE /api/user/:id", () => {
     it("Should return 401 success: false, error: You can only delete your own account", (done) => {
         server
         .delete(`/api/user/${t1_id}`)
-        .send({"_id": `${t2_id}`})
+        .send({"id": `${t2_id}`})
         .expect(401)
         .end(function(err,res){
             if (err) {
@@ -475,7 +474,7 @@ describe("DELETE /api/user/:id", () => {
     it("Should return 200 success: true, message: Account has been deleted", (done) => {
         server
         .delete(`/api/user/${t2_id}`)
-        .send({"_id": `${t2_id}`})
+        .send({"id": `${t2_id}`})
         .expect(200)
         .end(function(err,res){
             if (err) {
@@ -522,4 +521,259 @@ describe("GET /api/user/:id", () => {
             done();
         });
     });
+});
+
+/*
+    TWEET API TESTING
+    -----------------
+    List of existing users (for test):
+        [
+            {
+                name: TestUser
+                password: 1234
+            }
+        ]
+*/
+
+describe("DELETE /api/tweet/remove/all", () => {
+    it("Should return 200 success: true, message: All tweets have been deleted", (done) => {
+        server.delete("/api/tweet/remove/all")
+        .expect("Content-type", /json/)
+        .expect(200)
+        .end((err, res) => {
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.message.should.equal("All tweets have been deleted")
+            res.body.success.should.equal(true);
+            done();
+        });
+    })
+})
+
+let tweetId1 = "";
+let tweetId2 = "";
+let tweetId3 = "";
+
+describe("POST /api/tweet", () => {
+
+    it("Should return 200 success: true, message: tweetInfo", (done) => {
+        server
+        .post("/api/tweet/")
+        .send({
+            "userId": t1_id,
+            "post": "Test tweet to see if it works",
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.have.property("userId");
+            tweetId1 = res.body.message._id;
+            done();
+        });
+    });
+
+    // retweet test
+    it("Should return 200, success: true, message.parentId: ${tweetId1}", (done) => {
+        server
+        .post("/api/tweet/")
+        .send({
+            "userId": t1_id,
+            "post": "This is a retweet!",
+            "parentId": tweetId1
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.have.property("userId");
+            res.body.message.parentId.should.equal(tweetId1);
+            tweetId2 = res.body.message._id;
+            done();
+        });
+    });
+
+    // subtweet test
+    it("Should return 403, success: false, error: Cannot be both subtweet and retweet", (done) => {
+        server
+        .post(`/api/tweet/subtweet/${tweetId1}`)
+        .send({
+            "userId": t1_id,
+            "post": "Test tweet to see if it works",
+            "parentId": tweetId1
+        })
+        .expect(403)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(403);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Cannot be both subtweet and retweet");
+            done();
+        });
+    });
+
+    it("Should return 200, success: true, message: Subtweet successful", (done) => {
+        server
+        .post(`/api/tweet/subtweet/${tweetId1}`)
+        .send({
+            "userId": t1_id,
+            "post": "This is a subtweet (Thread)",
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.equal("Subtweet successful")
+            done();
+        });
+    });
+    
+});
+
+describe("GET /api/tweet", () => {
+    // Get main tweet, parent tweet, and array of subtweets
+    it("Should return 200 success: true, message: tweetInfo", (done) => {
+        server
+        .get(`/api/tweet/${tweetId1}`)
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.have.property("userId");
+            tweetId3 = res.body.message.subTweets[0];
+            done();
+        });
+    });
+
+    // retweet test
+    it("Should return 200 success: true, message: tweetInfo", (done) => {
+        server
+        .get(`/api/tweet/${tweetId2}`)
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.have.property("userId");
+            done();
+        });
+    });
+
+    // subtweet test
+    it("Should return 200 success: true, message: tweetInfo", (done) => {
+        server
+        .get(`/api/tweet/comments/${tweetId1}`)
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message[0]._id.should.equal(tweetId3);
+            done();
+        });
+    });
+    
+});
+
+// tweetId1 text = "Test tweet to see if it works"
+
+describe("PUT /api/tweet", () => {
+    // Like
+    it("Should return 200 success: true, message: Tweet has been liked", (done) => {
+        server
+        .put(`/api/tweet/like/${tweetId1}`)
+        .send({
+            "id": t1_id
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.equal("Tweet has been liked");
+            done();
+        });
+    });
+
+    // Unlike
+    it("Should return 200 success: true, message: Tweet has been unliked", (done) => {
+        server
+        .put(`/api/tweet/like/${tweetId1}`)
+        .send({
+            "id": t1_id
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.equal("Tweet has been unliked");
+            done();
+        });
+    });
+
+    // Edit others tweet
+    it("Should return 401 success: false, error: You can only update your own tweets", (done) => {
+        server
+        .put(`/api/tweet/${tweetId1}`)
+        .send({
+            "id": t2_id,  // This user doesnt work but doesnt matter for this test
+            "post": "This is the new tweet (after update)"
+        })
+        .expect(401)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(401);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("You can only update your own tweets");
+            done();
+        });
+    });
+
+    // Edit own tweet
+    it("Should return 200 success: true, message: The tweet has been updated", (done) => {
+        server
+        .put(`/api/tweet/${tweetId1}`)
+        .send({
+            "id": t1_id,  // This user doesnt work but doesnt matter for this test
+            "post": "This is the new tweet (after update)"
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.equal("The tweet has been updated");
+            done();
+        });
+    });
+    
 });
