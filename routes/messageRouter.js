@@ -17,34 +17,27 @@ messageRouter.post("/", expressAsyncHandler(async(req, res) => {
                 error: err
             });
         });
-    if (chat) {  // If chat exists, create message, add message to DB
-        const newMessage = new Message({
-            chatId: req.body.chatId,
-            sender: req.body.sender,
-            text: req.body.text
+    const newMessage = new Message({
+        chatId: req.body.chatId,
+        sender: req.body.sender,
+        text: req.body.text
+    });
+    const createdMessage = newMessage.save()
+        .catch(err => {
+            res.status(500).send({
+                success: false,
+                error: err.message
+            })
         });
-        const createdMessage = newMessage.save()
-            .catch(err => {
-                res.status(500).send({
-                    success: false,
-                    error: err.message
-                })
-            });
-        // socket.emit message here to send message to people in chat
-        // Saves correctly but postman (MongoDB Compass) -> Only sends success: true back to Postman
-        res.status(200).send({
-            success: true,
-            _id: createdMessage._id,
-            chatId: createdMessage.chatId,
-            sender: createdMessage.sender,
-            text: createdMessage.text
-        });  // Probably dont want to send entire text everytime, good for non business app tho
-    } else {
-        res.status(401).send({
-            success: false,
-            error: `Chat with id ${req.body.chatId} doesn't exist`
-        });
-    }
+    // socket.emit message here to send message to people in chat
+    // Saves correctly but postman (MongoDB Compass) -> Only sends success: true back to Postman
+    res.status(200).send({
+        success: true,
+        _id: createdMessage._id,
+        chatId: createdMessage.chatId,
+        sender: createdMessage.sender,
+        text: createdMessage.text
+    });  // Probably dont want to send entire text everytime, good for non business app tho
     
     
 }));
@@ -60,19 +53,18 @@ messageRouter.get("/:chatId", expressAsyncHandler(async(req, res) => {
             error: err
         });
     });
-    if (allMessages) {
-        // Likely used for fetching chat on frontend, -> Dont need to emit live socket as this is a bulk load
-        res.status(200).send({
-            success: true,
-            messages: allMessages
-        })
-    } else {
-        res.status(401).send({
-            success: false,
-            error: `There are no chats with the given id: ${req.params.chatId}`
-        });
-    }
+    // Dont throw error for empty messages (May be empty chat)
+    // Likely used for fetching chat on frontend, -> Don't need to emit entire allMessages
+    res.status(200).send({
+        success: true,
+        messages: allMessages
+    });
 }));
 
+// Clear message Collection (ONLY USED FOR UNIT TESTING)
+messageRouter.delete('/remove/all', expressAsyncHandler(async (req, res) => {
+    await Message.deleteMany({});
+    res.status(200).send({success: true, message:"All messages have been deleted"});
+}));
 
 export default messageRouter;

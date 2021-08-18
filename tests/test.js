@@ -10,6 +10,7 @@ let server = supertest.agent("http://localhost:5000");
 
 let t1_id = "";
 let t2_id = "";
+let t3_id = "";
 
 describe("GET /badlink", () => {
     it("Should return 404", (done) => {
@@ -776,4 +777,264 @@ describe("PUT /api/tweet", () => {
         });
     });
     
+});
+
+/*
+    CHAT API TESTING
+    -----------------
+    List of existing users (for test):
+        [
+            {
+                name: TestUser
+                password: 1234
+            }
+        ]
+    start by adding TestUser2, TestUser3 with 1234 pass
+*/
+
+let chatId = "";
+
+describe("Chat API Tests /api/chat", () => {
+    it("Should return success: true, _id, name, token", (done) => {
+        server.post("/api/user/register")
+        .send({
+            "name": "TestUser2",
+            "password": "1234"
+        })
+        .expect("Content-type", /json/)
+        .expect(200)
+        .end((err, res) => {
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.should.have.property('_id');
+            t2_id = res.body._id;  // Assign to global var for later int tests
+            res.body.should.have.property('token');
+            res.body.success.should.equal(true);
+            res.body.name.should.equal("TestUser2");
+            done();
+        });
+    });
+    it("Should return success: true, _id, name, token", (done) => {
+        server.post("/api/user/register")
+        .send({
+            "name": "TestUser3",
+            "password": "1234"
+        })
+        .expect("Content-type", /json/)
+        .expect(200)
+        .end((err, res) => {
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.should.have.property('_id');
+            t3_id = res.body._id;  // Assign to global var for later int tests
+            res.body.should.have.property('token');
+            res.body.success.should.equal(true);
+            res.body.name.should.equal("TestUser3");
+            done();
+        });
+    });
+
+    // DELETE ALL FOR TESTS
+
+    it("should return 200 success: true, message: All chats have been deleted", (done) => {
+        server.delete('/api/chat/remove/all')
+        .expect("Content-type", /json/)
+        .expect(200)
+        .end((err, res) => {
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.message.should.equal("All chats have been deleted");
+            done();
+        });
+    })
+
+    // TEST POST
+    it("Should return 200 success: true, members: array of members", (done) => {
+        server
+        .post(`/api/chat/`)
+        .send({
+            "senderId": t1_id,  // This user doesnt work but doesnt matter for this test
+            "receiverId": t2_id
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.should.have.property("_id");
+            chatId = res.body._id;
+            res.body.should.have.property("members");
+            done();
+        });
+    });
+
+    // TEST PUT
+    it("Should return 200 success: true, message: User successfully added", (done) => {
+        server
+        .put(`/api/chat/add/${chatId}`)
+        .send({
+            "id": t3_id
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.equal("User successfully added");
+            done();
+        });
+    });
+
+    it("Should return 200 success: true, message: User successfully removed", (done) => {
+        server
+        .put(`/api/chat/remove/${chatId}`)
+        .send({
+            "id": t3_id
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.message.should.equal("User successfully removed");
+            done();
+        });
+    });
+
+    // TEST GET
+    it("Should return 200 success: true, chats: Chat with user in it (1 chat)", (done) => {
+        server
+        .get(`/api/chat/${t1_id}`)
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.should.have.property("chats");
+            done();
+        });
+    });
+
+    it("Should return 401 success: true, error: User not in chats", (done) => {
+        server
+        .get(`/api/chat/${t3_id}`)
+        .expect(401)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(401);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal(`User with id: ${t3_id} is not in any chats`);
+            done();
+        });
+    });
+});
+
+/*
+    MESSAGE API TESTING
+    -----------------
+    List of existing users (for test):
+        [
+            {
+                name: TestUser
+                password: 1234
+            }, 
+            {
+                name: TestUser2,
+                password: 1234
+            },
+            {
+                name: TestUser3,
+                password: 1234
+            }
+        ]
+*/
+
+describe("Message API Tests /api/message", () => {
+
+    // DELETE ALL FOR TESTS
+
+    it("should return 200 success: true, message: All messages have been deleted", (done) => {
+        server.delete('/api/message/remove/all')
+        .expect("Content-type", /json/)
+        .expect(200)
+        .end((err, res) => {
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.message.should.equal("All messages have been deleted");
+            done();
+        });
+    })
+
+    // TEST POST
+    it("Should return 200 success: true, members: array of members", (done) => {
+        server
+        .post(`/api/message/`)
+        .send({
+            "chatId": chatId,  // This user doesnt work but doesnt matter for this test
+            "sender": t1_id,
+            "text": "Hello User! Nice to meet you!"
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            done();
+        });
+    });
+
+    it("Should return 200 success: true, members: array of members", (done) => {
+        server
+        .post(`/api/message/`)
+        .send({
+            "chatId": chatId,  // This user doesnt work but doesnt matter for this test
+            "sender": t2_id,
+            "text": "Hello! Nice to meet you too!"
+        })
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            done();
+        });
+    });
+
+    // TEST GET
+    it("Should return 200 success: true, chats: Chat with user in it (1 chat)", (done) => {
+        server
+        .get(`/api/message/${chatId}`)
+        .expect(200)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(200);
+            res.body.success.should.equal(true);
+            res.body.should.have.property("messages");
+            done();
+        });
+    });
 });
