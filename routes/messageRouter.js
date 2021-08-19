@@ -37,7 +37,7 @@ messageRouter.post("/", expressAsyncHandler(async(req, res) => {
         chatId: createdMessage.chatId,
         sender: createdMessage.sender,
         text: createdMessage.text
-    });  // Probably dont want to send entire text everytime, good for non business app tho
+    });  // Probably dont want to send entire text everytime, good for non complete app/testing tho
     
     
 }));

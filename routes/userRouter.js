@@ -19,7 +19,7 @@ userRouter.post('/register', expressAsyncHandler(async(req, res) => {
                 success: false,
                 err: err.message
             })
-        });  // If user exists our default error sends code 500
+        });  // If user exists our default error sends code 401
         res.status(200).send({
             success: true,
             _id: createdUser._id,
@@ -114,7 +114,7 @@ userRouter.delete('/remove/all', expressAsyncHandler(async (req, res) => {
 
 // Get user
 userRouter.get('/:id', expressAsyncHandler( async( req, res) => {
-    // If user doesnt exist error code 500
+    // If user doesnt exist error code 406
     const user = await User.findById(req.params.id)
         .catch(err => {
             res.status(500).send({success: false, error: err});

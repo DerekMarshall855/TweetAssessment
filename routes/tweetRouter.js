@@ -141,8 +141,6 @@ tweetRouter.put("/:id", expressAsyncHandler( async(req, res) => {
 
 }));
 
-// Add UPDATE to add a subtweet (Comment should create own tweet then add that tweets ID to subTweets array)
-
 // Delete tweet
 
 // Clear tweet Collection (ONLY USED FOR UNIT TESTING)
