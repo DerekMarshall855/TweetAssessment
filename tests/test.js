@@ -11,6 +11,7 @@ let server = supertest.agent("http://localhost:5000");
 let t1_id = "";
 let t2_id = "";
 let t3_id = "";
+const testId1 = "611e9c2e000518206084adf8";
 
 describe("GET /badlink", () => {
     it("Should return 404", (done) => {
@@ -193,12 +194,12 @@ describe("POST/AUTH Routes /api/user", () => {  // Returns status and success or
             "password": "123"
         })
         .expect("Content-type", /json/)
-        .expect(401)
+        .expect(406)
         .end((err, res) => {
             if (err) {
                 done(err);
             }
-            res.status.should.equal(401);
+            res.status.should.equal(406);
             res.body.success.should.equal(false);
             res.body.message.should.equal("Invalid Username");
             done();
@@ -212,12 +213,12 @@ describe("POST/AUTH Routes /api/user", () => {  // Returns status and success or
             "password": "InvalidPassword"
         })
         .expect("Content-type", /json/)
-        .expect(401)
+        .expect(406)
         .end((err, res) => {
             if (err) {
                 done(err);
             }
-            res.status.should.equal(401);
+            res.status.should.equal(406);
             res.body.success.should.equal(false);
             res.body.message.should.equal("Invalid Password");
             done();
@@ -325,6 +326,22 @@ describe("UPDATE /api/user/:id", () => {
         });
     });
 
+    it("Should return 406 success: false, error: User doesn't exist", (done) => {
+        server
+        .put(`/api/user/${testId1}`)
+        .send({"id": `${testId1}`, "name": "TestUser", "password": "123"})
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("User doesn't exist");
+            done();
+        });
+    });
+
     it("Should return 200 success: true, message: User successfully updated", (done) => {
         server
         .put(`/api/user/${t1_id}`)
@@ -408,6 +425,36 @@ describe("UPDATE /api/user/:id", () => {
             done();
         });
     });
+    it("Should return 406, success: false, error: User doesn't exist", (done) => {
+        server
+        .put(`/api/user/follow/${testId1}`)
+        .send({"id": `${t1_id}`})
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("User doesn't exist");
+            done();
+        });
+    });
+    it("Should return 406, success: false, error: User doesn't exist", (done) => {
+        server
+        .put(`/api/user/follow/${t1_id}`)
+        .send({"id": `${testId1}`})
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("User doesn't exist");
+            done();
+        });
+    });
     it("Should return 401, success: false, error: You cannot unfollow yourself", (done) => {
         server
         .put(`/api/user/unfollow/${t1_id}`)
@@ -453,6 +500,36 @@ describe("UPDATE /api/user/:id", () => {
             done();
         });
     });
+    it("Should return 406, success: false, error: User doesn't exist", (done) => {
+        server
+        .put(`/api/user/unfollow/${t1_id}`)
+        .send({"id": `${testId1}`})
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("User doesn't exist");
+            done();
+        });
+    });
+    it("Should return 406, success: false, error: User doesn't exist", (done) => {
+        server
+        .put(`/api/user/unfollow/${testId1}`)
+        .send({"id": `${t1_id}`})
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("User doesn't exist");
+            done();
+        });
+    });
 });
 
 describe("DELETE /api/user/:id", () => {
@@ -490,21 +567,20 @@ describe("DELETE /api/user/:id", () => {
 });
 
 describe("GET /api/user/:id", () => {
-    // Mocha cant handle error code 500, but trust me it does crash
-    // it("Should return 500 success: false, error: err", (done) => {
-    //     server
-    //     .get(`/api/user/${t2_id}`)
-    //     .expect(500)
-    //     .end(function(err,res){
-    //         if (err) {
-    //             done(err);
-    //         }
-    //         res.status.should.equal(500);
-    //         res.body.success.should.equal(false);
-    //         res.body.should.have.property('error');
-    //         done();
-    //     });
-    // });
+    it("Should return 406 success: false, error: User doesn't exist", (done) => {
+        server
+        .get(`/api/user/${testId1}`)
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("User doesn't exist");
+            done();
+        });
+    });
 
     it("Should return 200 success: true, message: accountInfo - password", (done) => {
         server
@@ -556,7 +632,6 @@ describe("DELETE /api/tweet/remove/all", () => {
 let tweetId1 = "";
 let tweetId2 = "";
 let tweetId3 = "";
-let testId1 = "611e9c2e000518206084adf8";
 
 describe("POST /api/tweet", () => {
 
