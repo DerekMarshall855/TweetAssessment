@@ -556,6 +556,7 @@ describe("DELETE /api/tweet/remove/all", () => {
 let tweetId1 = "";
 let tweetId2 = "";
 let tweetId3 = "";
+let testId1 = "611e9c2e000518206084adf8";
 
 describe("POST /api/tweet", () => {
 
@@ -602,6 +603,26 @@ describe("POST /api/tweet", () => {
         });
     });
 
+    it("Should return 406, success: false, error: Parent tweet doesn't exist", (done) => {
+        server
+        .post("/api/tweet/")
+        .send({
+            "userId": t3_id,
+            "post": "This is a retweet!",
+            "parentId": testId1
+        })
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Parent tweet doesn't exist")
+            done();
+        });
+    });
+
     // subtweet test
     it("Should return 403, success: false, error: Cannot be both subtweet and retweet", (done) => {
         server
@@ -641,6 +662,25 @@ describe("POST /api/tweet", () => {
             done();
         });
     });
+
+    it("Should return 406, success: false, error: Tweet doesn't exist", (done) => {
+        server
+        .post(`/api/tweet/subtweet/${testId1}`)
+        .send({
+            "userId": t1_id,
+            "post": "This is a subtweet (Thread)",
+        })
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Tweet doesn't exist")
+            done();
+        });
+    });
     
 });
 
@@ -658,6 +698,21 @@ describe("GET /api/tweet", () => {
             res.body.success.should.equal(true);
             res.body.message.should.have.property("userId");
             tweetId3 = res.body.message.subTweets[0];
+            done();
+        });
+    });
+
+    it("Should return 406 success: false, error: Tweet doesn't exist", (done) => {
+        server
+        .get(`/api/tweet/${testId1}`)
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Tweet doesn't exist")
             done();
         });
     });
@@ -690,6 +745,21 @@ describe("GET /api/tweet", () => {
             res.status.should.equal(200);
             res.body.success.should.equal(true);
             res.body.message[0]._id.should.equal(tweetId3);
+            done();
+        });
+    });
+
+    it("Should return 406 success: false, error: Tweet doesn't exist", (done) => {
+        server
+        .get(`/api/tweet/comments/${testId1}`)
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Tweet doesn't exist")
             done();
         });
     });
@@ -737,6 +807,24 @@ describe("PUT /api/tweet", () => {
         });
     });
 
+    it("Should return 406 success: false, error: Tweet doesn't exist", (done) => {
+        server
+        .put(`/api/tweet/like/${testId1}`)
+        .send({
+            "id": testId1
+        })
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Tweet doesn't exist");
+            done();
+        });
+    });
+
     // Edit others tweet
     it("Should return 401 success: false, error: You can only update your own tweets", (done) => {
         server
@@ -753,6 +841,25 @@ describe("PUT /api/tweet", () => {
             res.status.should.equal(401);
             res.body.success.should.equal(false);
             res.body.error.should.equal("You can only update your own tweets");
+            done();
+        });
+    });
+
+    it("Should return 406 success: false, error: Tweet doesn't exist", (done) => {
+        server
+        .put(`/api/tweet/${testId1}`)
+        .send({
+            "id": testId1,
+            "post": "This is an editted tweet"
+        })
+        .expect(406)
+        .end(function(err,res){
+            if (err) {
+                done(err);
+            }
+            res.status.should.equal(406);
+            res.body.success.should.equal(false);
+            res.body.error.should.equal("Tweet doesn't exist");
             done();
         });
     });
