@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import db from './db/db.js';
 import tweetRouter from './routes/tweetRouter.js';
 import messageRouter from './routes/messageRouter.js';
+// import http from 'http';
+// import { Server } from 'socket.io';
 
 dotenv.config();
 
@@ -21,7 +23,24 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 // Connect with db
-db.on('error', console.error.bind(console, 'MongoDB connection error: '))
+db.on('error', console.error.bind(console, 'MongoDB connection error: '));
+
+// const httpServer = http.createServer(app);
+// const io = new Server(httpServer);
+
+// Connection
+// io.on('connection', (socket) => {
+//     console.log("User connected");
+//     socket.on('disconnect', () => {
+//         console.log("User disconnected");
+//     });
+// });
+
+// IO Middleware (so each req has a .io to emit to)
+// app.use((req, res, next) => {
+//     req.io = io;
+//     next();
+// })
 
 // Routes
 app.use('/api/user', userRouter);
@@ -34,13 +53,12 @@ app.get('/', (req, res) => {
     res.status(200).send("Server is ready");
 })
 
-// Error
+// Error Default Middleware
 app.use((err, res, req, next) => {
     res.status(500).send({message: err.message});
 })
 
-// Connection
 const apiPort = process.env.PORT || 5000;
-app.listen(apiPort, () => {
+var server = app.listen(apiPort, () => {
     console.log(`Server is ready at https://localhost:${apiPort}`);
 })
