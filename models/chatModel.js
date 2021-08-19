@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 // Unique for now, if expanded to have a chat admin this feature isnt good (Ez to fix tho)
 const chatSchema = new mongoose.Schema(
     {
-    members: { type: Array, required: true, unique: true }
+    members: { type: Array, required: true, unique: [true, "User already a member of this chat"] }
     },
     { timestamps: true }
 );
